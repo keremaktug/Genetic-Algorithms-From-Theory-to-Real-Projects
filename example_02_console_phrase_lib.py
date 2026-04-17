@@ -7,33 +7,26 @@ from core.ga_solver import (
     MutationType,
 )
 
-
 LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890,."
 PHRASE = "Those who live in glass houses should not throw stones"
-
 
 def decode(chromosome: Chromosome[str]) -> str:
     return "".join(chromosome.data)
 
-
 def random_gene() -> str:
     return random.choice(LETTERS)
-
 
 def phrase_generator() -> Chromosome[str]:
     characters = [random_gene() for _ in range(len(PHRASE))]
     return Chromosome(characters)
-
 
 def calculate_fitness(chromosome: Chromosome[str]) -> float:
     return float(
         sum(abs(ord(PHRASE[i]) - ord(chromosome.data[i])) for i in range(len(PHRASE)))
     )
 
-
 def stop_condition(best: Chromosome[str]) -> bool:
     return best.fitness == 0
-
 
 def on_iteration(iteration: int, average_fitness: float, best: Chromosome[str]) -> None:
     print(
@@ -43,12 +36,10 @@ def on_iteration(iteration: int, average_fitness: float, best: Chromosome[str]) 
         f"text='{decode(best)}'"
     )
 
-
 def on_solution(iteration: int, solution: Chromosome[str]) -> None:
     print("\nSolution found")
     print(f"Iteration: {iteration}")
     print(f"Phrase    : {decode(solution)}")
-
 
 def main() -> None:
     solver = GeneticSolver[str](
@@ -72,7 +63,6 @@ def main() -> None:
 
     if result is None:
         print("\nExact solution not found within iteration limit.")
-
 
 if __name__ == "__main__":
     main()

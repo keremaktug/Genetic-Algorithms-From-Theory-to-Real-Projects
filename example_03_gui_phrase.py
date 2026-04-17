@@ -16,28 +16,22 @@ from core.ga_solver import (
 LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890,."
 PHRASE = "Those who live in glass houses should not throw stones"
 
-
 def decode(chromosome: Chromosome[str]) -> str:
     return "".join(chromosome.data)
-
 
 def random_gene() -> str:
     return random.choice(LETTERS)
 
-
 def phrase_generator() -> Chromosome[str]:
     return Chromosome([random_gene() for _ in range(len(PHRASE))])
-
 
 def calculate_fitness(chromosome: Chromosome[str]) -> float:
     return float(
         sum(abs(ord(PHRASE[i]) - ord(chromosome.data[i])) for i in range(len(PHRASE)))
     )
 
-
 def stop_condition(best: Chromosome[str]) -> bool:
     return best.fitness == 0
-
 
 class PhraseEvolutionApp:
     def __init__(self, root: tk.Tk) -> None:
@@ -271,7 +265,6 @@ class PhraseEvolutionApp:
 
     def run(self) -> None:
         self.root.mainloop()
-
 
 if __name__ == "__main__":
     root = tk.Tk()
