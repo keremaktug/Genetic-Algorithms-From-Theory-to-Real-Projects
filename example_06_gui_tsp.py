@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import math
 import queue
 import random
@@ -7,13 +6,10 @@ import threading
 import tkinter as tk
 from dataclasses import dataclass
 from tkinter import messagebox, ttk
-
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-
 from core.ga_solver import Chromosome, CrossoverType, GeneticSolver, MutationType
-
 
 @dataclass
 class City:
@@ -21,22 +17,17 @@ class City:
     x: float
     y: float
 
-
 CITIES: list[City] = []
-
 
 def degree_to_radian(degree: float) -> float:
     return degree * math.pi / 180.0
 
-
 def distance(ax: float, ay: float, bx: float, by: float) -> float:
     return math.hypot(ax - bx, ay - by)
 
-
-def load_circular_cities(radius: float = 125.0, point_count: int = 20) -> list[City]:
+def load_circular_cities(radius: float = 125.0, point_count: int = 20) -> list[City]:    
     cities: list[City] = []
     j = 1
-
     for degree in range(0, 360, 360 // point_count):
         px = math.sin(degree_to_radian(degree)) * radius
         py = math.cos(degree_to_radian(degree)) * radius
@@ -54,7 +45,6 @@ def path_generator() -> Chromosome[int]:
 def decode(chromosome: Chromosome[int]) -> str:
     return " -> ".join(str(CITIES[idx].city_id) for idx in chromosome.data)
 
-
 def calculate_fitness_tsp(chromosome: Chromosome[int]) -> float:
     total = 0.0
 
@@ -69,10 +59,8 @@ def calculate_fitness_tsp(chromosome: Chromosome[int]) -> float:
 
     return total
 
-
 def stop_condition(_best: Chromosome[int]) -> bool:
     return False
-
 
 def generate_color_scheme(count: int) -> np.ndarray:
     import colorsys
@@ -83,7 +71,6 @@ def generate_color_scheme(count: int) -> np.ndarray:
         r, g, b = colorsys.hls_to_rgb(h, 0.5, 0.75)
         colors[i] = (int(r * 255), int(g * 255), int(b * 255))
     return colors
-
 
 class TSPApp:
     def __init__(self, root: tk.Tk) -> None:
@@ -503,7 +490,6 @@ class TSPApp:
 
     def run(self) -> None:
         self.root.mainloop()
-
 
 if __name__ == "__main__":
     root = tk.Tk()
