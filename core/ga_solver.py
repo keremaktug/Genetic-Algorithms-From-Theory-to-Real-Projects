@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable, Generic, List, Optional, TypeVar
+from typing import Callable, Generic, List, Optional, Sequence, TypeVar
 
 
 GeneT = TypeVar("GeneT")
@@ -52,18 +52,25 @@ class Population(Generic[GeneT]):
         return sum(c.fitness for c in self.chromosomes) / len(self.chromosomes)
 
 
-def one_point_crossover(a: List[GeneT], b: List[GeneT], point: int) -> tuple[List[GeneT], List[GeneT]]:
+def one_point_crossover(
+    a: Sequence[GeneT],
+    b: Sequence[GeneT],
+    point: int,
+) -> tuple[List[GeneT], List[GeneT]]:
     if len(a) != len(b):
         raise ValueError("Chromosome lengths are not equal")
     if point < 0 or point > len(a):
         raise ValueError("Invalid crossover point")
 
-    child1 = a[:point] + b[point:]
-    child2 = b[:point] + a[point:]
+    child1 = list(a[:point]) + list(b[point:])
+    child2 = list(b[:point]) + list(a[point:])
     return child1, child2
 
 
-def uniform_crossover(a: List[GeneT], b: List[GeneT]) -> tuple[List[GeneT], List[GeneT]]:
+def uniform_crossover(
+    a: Sequence[GeneT],
+    b: Sequence[GeneT],
+) -> tuple[List[GeneT], List[GeneT]]:
     if len(a) != len(b):
         raise ValueError("Chromosome lengths are not equal")
 
@@ -81,12 +88,7 @@ def uniform_crossover(a: List[GeneT], b: List[GeneT]) -> tuple[List[GeneT], List
     return child1, child2
 
 
-def pmx_crossover(a: List[GeneT], b: List[GeneT]) -> List[GeneT]:
-    """
-    PMX is mainly suitable for permutation-based problems.
-    It is kept here as a generic operator, but should be used only
-    when gene uniqueness / permutation semantics make sense.
-    """
+def pmx_crossover(a: Sequence[GeneT], b: Sequence[GeneT]) -> List[GeneT]:
     if len(a) != len(b):
         raise ValueError("Chromosome lengths are not equal")
 
@@ -118,15 +120,15 @@ def pmx_crossover(a: List[GeneT], b: List[GeneT]) -> List[GeneT]:
     return [x for x in child if x is not None]
 
 
-def swap_mutation(genes: List[GeneT]) -> List[GeneT]:
-    result = genes.copy()
+def swap_mutation(genes: Sequence[GeneT]) -> List[GeneT]:
+    result = list(genes)
     i, j = sorted(random.sample(range(len(result)), 2))
     result[i], result[j] = result[j], result[i]
     return result
 
 
-def scramble_mutation(genes: List[GeneT]) -> List[GeneT]:
-    result = genes.copy()
+def scramble_mutation(genes: Sequence[GeneT]) -> List[GeneT]:
+    result = list(genes)
     i, j = sorted(random.sample(range(len(result)), 2))
     middle = result[i:j]
     random.shuffle(middle)
@@ -134,18 +136,18 @@ def scramble_mutation(genes: List[GeneT]) -> List[GeneT]:
     return result
 
 
-def inversion_mutation(genes: List[GeneT]) -> List[GeneT]:
-    result = genes.copy()
+def inversion_mutation(genes: Sequence[GeneT]) -> List[GeneT]:
+    result = list(genes)
     i, j = sorted(random.sample(range(len(result)), 2))
     result[i:j] = list(reversed(result[i:j]))
     return result
 
 
 def random_reset_mutation(
-    genes: List[GeneT],
+    genes: Sequence[GeneT],
     gene_factory: Callable[[], GeneT],
 ) -> List[GeneT]:
-    result = genes.copy()
+    result = list(genes)
     i = random.randrange(len(result))
     result[i] = gene_factory()
     return result
@@ -202,7 +204,11 @@ class GeneticSolver(Generic[GeneT]):
     def sort_population(self) -> None:
         self.population.sort(reverse=self.maximize_fitness)
 
-    def crossover(self, parent1: Chromosome[GeneT], parent2: Chromosome[GeneT]) -> Chromosome[GeneT]:
+    def crossover(
+        self,
+        parent1: Chromosome[GeneT],
+        parent2: Chromosome[GeneT],
+    ) -> Chromosome[GeneT]:
         if self.crossover_type == CrossoverType.ONE_POINT:
             point = random.randint(1, len(parent1.data) - 1)
             child_data = one_point_crossover(parent1.data, parent2.data, point)[0]
@@ -218,9 +224,7 @@ class GeneticSolver(Generic[GeneT]):
     def mutate(self, chromosome: Chromosome[GeneT]) -> Chromosome[GeneT]:
         if self.mutation_type == MutationType.RANDOM_RESET:
             if self.random_gene_function is None:
-                raise ValueError(
-                    "random_gene_function must be set for RANDOM_RESET mutation"
-                )
+                raise ValueError("random_gene_function must be set for RANDOM_RESET mutation")
             return Chromosome(
                 random_reset_mutation(chromosome.data, self.random_gene_function)
             )
@@ -242,9 +246,7 @@ class GeneticSolver(Generic[GeneT]):
         elite_count = max(1, int(self.population_size * self.elitism_ratio))
         new_generation.extend(c.copy() for c in self.population.chromosomes[:elite_count])
 
-        parent_pool = self.population.chromosomes[
-            : max(2, len(self.population.chromosomes) // 2)
-        ]
+        parent_pool = self.population.chromosomes[: max(2, len(self.population.chromosomes) // 2)]
 
         while len(new_generation) < self.population_size:
             parent1, parent2 = random.sample(parent_pool, 2)
