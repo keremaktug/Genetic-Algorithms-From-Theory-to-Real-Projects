@@ -4,6 +4,7 @@ import queue
 import threading
 import tkinter as tk
 from tkinter import ttk, messagebox
+from typing import Final
 
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -16,8 +17,6 @@ from core.ga_solver import (
     Population,
 )
 from example_02_console_phrase_lib import (
-    LETTERS,
-    PHRASE,
     calculate_fitness,
     decode,
     generate_color_scheme,
@@ -27,8 +26,11 @@ from example_02_console_phrase_lib import (
     stop_condition,
 )
 
+LETTERS: Final[str] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890,."
+PHRASE: Final[str] = "The crow thinks its own chick is the whitest."
 
 class PhraseEvolutionApp:
+
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.root.title("Phrase Evolution GUI")

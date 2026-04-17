@@ -14,7 +14,7 @@ from core.ga_solver import (
 
 
 LETTERS: Final[str] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890,."
-PHRASE: Final[str] = "Those who live in glass houses should not throw stones"
+PHRASE: Final[str] = "The pot calling the kettle black"
 
 LETTER_COUNT: Final[int] = len(LETTERS)
 PHRASE_LENGTH: Final[int] = len(PHRASE)
