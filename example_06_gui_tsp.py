@@ -205,7 +205,7 @@ class TSPApp:
         self.canvas_chart.get_tk_widget().pack(fill="both", expand=True)
 
     def init_defaults(self) -> None:
-        self.cmb_population.current(3)
+        self.cmb_population.current(2)
         self.cmb_crossover.current(2)
         self.cmb_mutation.current(0)
         self.cmb_elitism.current(3)

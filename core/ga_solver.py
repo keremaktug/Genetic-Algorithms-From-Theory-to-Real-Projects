@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import random
 from dataclasses import dataclass, field
 from enum import Enum
@@ -154,6 +153,7 @@ def random_reset_mutation(
 
 
 class GeneticSolver(Generic[GeneT]):
+
     def __init__(
         self,
         population_size: int = 1024,

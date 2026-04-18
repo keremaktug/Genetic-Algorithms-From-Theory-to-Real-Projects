@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import os
 import queue
 import random
@@ -7,13 +6,10 @@ import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
 from typing import Final
-
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-
 from core.ga_solver import Chromosome, CrossoverType, GeneticSolver, MutationType
-
 
 # =========================================================
 # 8 Queens problem-specific code
@@ -64,7 +60,6 @@ def stop_condition(best: Chromosome[int]) -> bool:
 
 def random_gene() -> int:
     return random.randrange(BOARD_SIZE)
-
 
 # =========================================================
 # GUI code
@@ -119,7 +114,7 @@ class QueensApp:
             state="readonly",
             values=["4", "8", "16", "32", "64", "128", "256"],
         )
-        self.cmb_population.current(1)
+        self.cmb_population.current(0)
         self.cmb_population.pack(fill="x", pady=(6, 12))
 
         self.btn_evolve = tk.Button(
