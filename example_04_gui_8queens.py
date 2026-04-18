@@ -114,7 +114,7 @@ class QueensApp:
             state="readonly",
             values=["4", "8", "16", "32", "64", "128", "256"],
         )
-        self.cmb_population.current(0)
+        self.cmb_population.current(1)
         self.cmb_population.pack(fill="x", pady=(6, 12))
 
         self.btn_evolve = tk.Button(

@@ -11,7 +11,6 @@ from example_02_console_phrase_lib import (
     stop_condition,
 )
 
-
 def on_iteration(iteration: int, average_fitness: float, best) -> None:
     print(
         f"iter={iteration:04d} "
@@ -20,12 +19,10 @@ def on_iteration(iteration: int, average_fitness: float, best) -> None:
         f"text='{decode(best)}'"
     )
 
-
 def on_solution(iteration: int, solution) -> None:
     print("\nSolution found")
     print(f"Iteration: {iteration}")
     print(f"Phrase    : {decode(solution)}")
-
 
 def main() -> None:
     solver = GeneticSolver[int](
@@ -48,7 +45,6 @@ def main() -> None:
     result = solver.evolve()
     if result is None:
         print("\nExact solution not found within iteration limit.")
-
 
 if __name__ == "__main__":
     main()

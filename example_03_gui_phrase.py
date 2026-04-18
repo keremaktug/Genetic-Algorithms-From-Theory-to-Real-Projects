@@ -26,7 +26,7 @@ from example_02_console_phrase_lib import (
     stop_condition,
 )
 
-LETTERS: Final[str] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890,."
+LETTERS: Final[str] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890,._-"
 PHRASE: Final[str] = "The crow thinks its own chick is the whitest."
 
 class PhraseEvolutionApp:

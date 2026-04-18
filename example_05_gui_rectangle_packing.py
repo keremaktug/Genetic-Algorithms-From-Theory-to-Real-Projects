@@ -1,17 +1,13 @@
 from __future__ import annotations
-
 import queue
 import random
 import threading
 import tkinter as tk
 from dataclasses import dataclass
 from tkinter import messagebox
-
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-
 from core.ga_solver import Chromosome, CrossoverType, GeneticSolver, MutationType
-
 
 # =========================================================
 # Problem-specific code
@@ -20,14 +16,12 @@ from core.ga_solver import Chromosome, CrossoverType, GeneticSolver, MutationTyp
 GRID_LIMIT = 19
 FACTOR = 20
 
-
 @dataclass
 class RectangleStruct:
     rect_id: int
     width: int
     height: int
     color: str
-
 
 RECTANGLES: list[RectangleStruct] = [
     RectangleStruct(1, 8, 7, "blue"),
@@ -42,7 +36,6 @@ RECTANGLES: list[RectangleStruct] = [
     RectangleStruct(10, 1, 1, "burlywood"),
     RectangleStruct(11, 2, 1, "cyan"),
 ]
-
 
 def best_solution_seed() -> Chromosome[int]:
     data = [
@@ -60,7 +53,6 @@ def best_solution_seed() -> Chromosome[int]:
     ]
     return Chromosome(data)
 
-
 def variables_generator() -> Chromosome[int]:
     variables: list[int] = []
 
@@ -71,7 +63,6 @@ def variables_generator() -> Chromosome[int]:
         variables.extend([x, y, o])
 
     return Chromosome(variables)
-
 
 def decode(chromosome: Chromosome[int]) -> str:
     chunks: list[str] = []
@@ -84,7 +75,6 @@ def decode(chromosome: Chromosome[int]) -> str:
         chunks.append(f"R{rect.rect_id}=({x},{y},{o})")
         j += 1
     return " ".join(chunks)
-
 
 def get_rect_instances(chromosome: Chromosome[int]) -> list[tuple[int, int, int, int, int]]:
     """
@@ -108,7 +98,6 @@ def get_rect_instances(chromosome: Chromosome[int]) -> list[tuple[int, int, int,
 
     return all_rects
 
-
 def overlap_area(x1: int, y1: int, w1: int, h1: int, x2: int, y2: int, w2: int, h2: int) -> int:
     left = max(x1, x2)
     right = min(x1 + w1, x2 + w2)
@@ -117,7 +106,6 @@ def overlap_area(x1: int, y1: int, w1: int, h1: int, x2: int, y2: int, w2: int, 
     overlap_width = max(0, right - left)
     overlap_height = max(0, bottom - top)
     return overlap_width * overlap_height
-
 
 def calculate_overlapping_area(chromosome: Chromosome[int]) -> int:
     total = 0
@@ -131,7 +119,6 @@ def calculate_overlapping_area(chromosome: Chromosome[int]) -> int:
                 total += overlap_area(x1, y1, w1, h1, x2, y2, w2, h2)
 
     return total // 2
-
 
 def calculate_illegal_rectangles(chromosome: Chromosome[int]) -> int:
     illegal = 0
@@ -154,7 +141,6 @@ def calculate_illegal_rectangles(chromosome: Chromosome[int]) -> int:
         j += 1
 
     return illegal
-
 
 def calculate_bounding_box(chromosome: Chromosome[int]) -> tuple[int, int, int, int]:
     min_x = 10**9
@@ -186,7 +172,6 @@ def calculate_bounding_box(chromosome: Chromosome[int]) -> tuple[int, int, int, 
 
     return min_x, min_y, max_x, max_y
 
-
 def calculate_fitness(chromosome: Chromosome[int]) -> float:
     overlapping_area = calculate_overlapping_area(chromosome)
     bbox = calculate_bounding_box(chromosome)
@@ -194,11 +179,9 @@ def calculate_fitness(chromosome: Chromosome[int]) -> float:
     illegal_rects = calculate_illegal_rectangles(chromosome)
     return float((overlapping_area * 5) + (area * 2) + (illegal_rects * 10))
 
-
 def stop_condition(best: Chromosome[int]) -> bool:
     # C# örneğinde exact target yoktu; burada mükemmel yerleşim için 0 kullanıyoruz.
     return best.fitness == 0.0
-
 
 # =========================================================
 # GUI

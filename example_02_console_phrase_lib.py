@@ -1,10 +1,7 @@
 from __future__ import annotations
-
 import random
 from typing import Final
-
 import numpy as np
-
 from core.ga_solver import (
     Chromosome,
     CrossoverType,
@@ -12,9 +9,8 @@ from core.ga_solver import (
     MutationType,
 )
 
-
-LETTERS: Final[str] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890,."
-PHRASE: Final[str] = "The pot calling the kettle black"
+LETTERS: Final[str] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890,._-"
+PHRASE: Final[str] = "Genetic-Algorithms-From-Theory-to-Real-Projects"
 
 LETTER_COUNT: Final[int] = len(LETTERS)
 PHRASE_LENGTH: Final[int] = len(PHRASE)
