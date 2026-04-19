@@ -9,8 +9,8 @@ import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-from core.ga_solver import CrossoverType, GeneticSolver, MutationType, Population
-from example_11_vrp_lib import (
+from core.ga_solver1 import CrossoverType, GeneticSolver, MutationType, Population
+from old.example_11_vrp_lib import (
     CUSTOMERS,
     CUSTOMER_COUNT,
     DEPOT_X,

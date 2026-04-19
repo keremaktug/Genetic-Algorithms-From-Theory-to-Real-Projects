@@ -6,7 +6,7 @@ from typing import Final
 
 import numpy as np
 
-from core.ga_solver import Chromosome
+from core.ga_solver1 import Chromosome
 
 
 @dataclass(frozen=True)

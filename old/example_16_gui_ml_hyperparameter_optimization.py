@@ -16,7 +16,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix
 from sklearn.model_selection import train_test_split
 
-from core.ga_solver import Chromosome, CrossoverType, GeneticSolver, MutationType, Population
+from core.ga_solver1 import Chromosome, CrossoverType, GeneticSolver, MutationType, Population
 
 
 # =========================================================

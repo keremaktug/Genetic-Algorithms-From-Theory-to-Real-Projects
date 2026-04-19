@@ -11,7 +11,7 @@ import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-from core.ga_solver import Chromosome, CrossoverType, GeneticSolver, MutationType, Population
+from core.ga_solver1 import Chromosome, CrossoverType, GeneticSolver, MutationType, Population
 
 
 # =========================================================
@@ -79,7 +79,6 @@ def get_design_dict(chromosome: Chromosome[float]) -> dict[str, float]:
 
 def vessel_cost(chromosome: Chromosome[float]) -> float:
     ts, th, r, l = chromosome.data
-
     return (
         0.6224 * ts * r * l
         + 1.7781 * th * r * r
@@ -91,8 +90,7 @@ def vessel_cost(chromosome: Chromosome[float]) -> float:
 def vessel_constraints(chromosome: Chromosome[float]) -> dict[str, float]:
     ts, th, r, l = chromosome.data
 
-    # Standard pressure vessel benchmark style constraints:
-    # g_i <= 0 is feasible
+    # Feasible if all g_i <= 0
     g1 = -ts + 0.0193 * r
     g2 = -th + 0.00954 * r
     g3 = -np.pi * r * r * l - (4.0 / 3.0) * np.pi * r**3 + 1296000.0
@@ -118,17 +116,13 @@ def total_penalty(chromosome: Chromosome[float]) -> float:
 
 
 def calculate_fitness(chromosome: Chromosome[float]) -> float:
-    # Normalize genes before evaluating
-    normalized = [
+    chromosome.data = [
         normalize_gene(i, chromosome.data[i])
         for i in range(len(chromosome.data))
     ]
-    chromosome.data = normalized
 
     cost = vessel_cost(chromosome)
     penalty = total_penalty(chromosome)
-
-    # Large penalty coefficient for constraint handling
     return float(cost + 1_000_000.0 * penalty)
 
 
@@ -148,7 +142,6 @@ def get_population_matrix(population_snapshot: list[list[float]]) -> np.ndarray:
 
 
 def generate_color_scheme() -> np.ndarray:
-    # smooth multi-color gradient
     import colorsys
 
     colors = np.zeros((256, 3), dtype=np.uint8)
@@ -160,9 +153,6 @@ def generate_color_scheme() -> np.ndarray:
 
 
 def scale_population_matrix_for_display(matrix: np.ndarray) -> np.ndarray:
-    """
-    Scale each column independently into [0, 255] for population heatmap.
-    """
     if matrix.size == 0:
         return np.empty((0, 0), dtype=np.uint8)
 
@@ -184,11 +174,11 @@ def scale_population_matrix_for_display(matrix: np.ndarray) -> np.ndarray:
 # GUI
 # =========================================================
 
-class PressureVesselApp:
+class PressureVesselVisualApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.root.title("Pressure Vessel Design Optimization")
-        self.root.geometry("1240x760")
+        self.root.geometry("1380x780")
         self.root.resizable(False, False)
 
         self.solver: GeneticSolver[float] | None = None
@@ -213,6 +203,9 @@ class PressureVesselApp:
         self.th_var = tk.StringVar(value="Th: -")
         self.r_var = tk.StringVar(value="R: -")
         self.l_var = tk.StringVar(value="L: -")
+        self.volume_var = tk.StringVar(value="Volume: -")
+
+        self.current_best: Chromosome[float] | None = None
 
         self.color_scheme = generate_color_scheme()
         self.pool_image: tk.PhotoImage | None = None
@@ -255,7 +248,7 @@ class PressureVesselApp:
         self.btn_start.pack(fill="x", pady=(10, 0))
 
         design_frame = tk.LabelFrame(self.root, text="Best Design", padx=10, pady=10)
-        design_frame.place(x=10, y=345, width=210, height=250)
+        design_frame.place(x=10, y=345, width=210, height=260)
 
         tk.Label(design_frame, textvariable=self.best_cost_var, anchor="w").pack(fill="x", pady=2)
         tk.Label(design_frame, textvariable=self.feasible_var, anchor="w").pack(fill="x", pady=2)
@@ -264,17 +257,18 @@ class PressureVesselApp:
         tk.Label(design_frame, textvariable=self.th_var, anchor="w").pack(fill="x", pady=2)
         tk.Label(design_frame, textvariable=self.r_var, anchor="w").pack(fill="x", pady=2)
         tk.Label(design_frame, textvariable=self.l_var, anchor="w").pack(fill="x", pady=2)
+        tk.Label(design_frame, textvariable=self.volume_var, anchor="w").pack(fill="x", pady=2)
 
         result_frame = tk.LabelFrame(self.root, text="Best Chromosomes", padx=5, pady=5)
-        result_frame.place(x=230, y=10, width=990, height=180)
+        result_frame.place(x=230, y=10, width=1130, height=170)
 
         self.result_list = tk.Listbox(result_frame, font=("Consolas", 10))
         self.result_list.pack(fill="both", expand=True)
 
         chart_frame = tk.LabelFrame(self.root, text="Fitness Chart", padx=8, pady=8)
-        chart_frame.place(x=230, y=200, width=500, height=520)
+        chart_frame.place(x=230, y=190, width=500, height=560)
 
-        self.fig = Figure(figsize=(5.4, 4.8), dpi=100)
+        self.fig = Figure(figsize=(5.4, 5.2), dpi=100)
         self.ax = self.fig.add_subplot(111)
         self.ax.set_xlabel("Iteration")
         self.ax.set_ylabel("Fitness")
@@ -289,12 +283,24 @@ class PressureVesselApp:
         self.canvas_chart = FigureCanvasTkAgg(self.fig, master=chart_frame)
         self.canvas_chart.get_tk_widget().pack(fill="both", expand=True)
 
+        vessel_frame = tk.LabelFrame(self.root, text="Pressure Vessel Visualization", padx=8, pady=8)
+        vessel_frame.place(x=750, y=190, width=610, height=300)
+
+        self.vessel_canvas = tk.Canvas(
+            vessel_frame,
+            width=570,
+            height=250,
+            bg="white",
+            highlightthickness=0,
+        )
+        self.vessel_canvas.pack(fill="both", expand=True)
+
         pool_frame = tk.LabelFrame(self.root, text="Population Chart", padx=8, pady=8)
-        pool_frame.place(x=750, y=200, width=470, height=250)
+        pool_frame.place(x=750, y=500, width=300, height=250)
 
         self.pool_canvas = tk.Canvas(
             pool_frame,
-            width=430,
+            width=260,
             height=210,
             bg="white",
             highlightthickness=0,
@@ -302,9 +308,9 @@ class PressureVesselApp:
         self.pool_canvas.pack(fill="both", expand=True)
 
         constraints_frame = tk.LabelFrame(self.root, text="Constraint Values (g <= 0)", padx=8, pady=8)
-        constraints_frame.place(x=750, y=465, width=470, height=255)
+        constraints_frame.place(x=1060, y=500, width=300, height=250)
 
-        self.constraints_list = tk.Listbox(constraints_frame, font=("Consolas", 10))
+        self.constraints_list = tk.Listbox(constraints_frame, font=("Consolas", 9))
         self.constraints_list.pack(fill="both", expand=True)
 
     def clear_ui(self) -> None:
@@ -331,6 +337,10 @@ class PressureVesselApp:
         self.th_var.set("Th: -")
         self.r_var.set("R: -")
         self.l_var.set("L: -")
+        self.volume_var.set("Volume: -")
+
+        self.vessel_canvas.delete("all")
+        self.current_best = None
 
     def flush_ui_queue(self) -> None:
         while True:
@@ -421,6 +431,7 @@ class PressureVesselApp:
             elif kind == "finished":
                 _, solution = item
                 self.update_design_panel(solution)
+                self.redraw_vessel(solution)
 
             elif kind == "finished_no_solution":
                 pass
@@ -460,23 +471,33 @@ class PressureVesselApp:
         self.canvas_chart.draw_idle()
 
     def update_design_panel(self, chromosome: Chromosome[float]) -> None:
+        self.current_best = chromosome
+
         design = get_design_dict(chromosome)
         cost = vessel_cost(chromosome)
         penalty = total_penalty(chromosome)
         feasible = is_feasible(chromosome)
         constraints = vessel_constraints(chromosome)
 
+        ts = design["Ts"]
+        th = design["Th"]
+        r = design["R"]
+        l = design["L"]
+        volume = np.pi * r * r * l + (4.0 / 3.0) * np.pi * r**3
+
         self.best_cost_var.set(f"Cost: {cost:.4f}")
         self.feasible_var.set(f"Feasible: {'Yes' if feasible else 'No'}")
         self.penalty_var.set(f"Penalty: {penalty:.6f}")
-        self.ts_var.set(f"Ts: {design['Ts']:.4f}")
-        self.th_var.set(f"Th: {design['Th']:.4f}")
-        self.r_var.set(f"R: {design['R']:.4f}")
-        self.l_var.set(f"L: {design['L']:.4f}")
+        self.ts_var.set(f"Ts: {ts:.4f}")
+        self.th_var.set(f"Th: {th:.4f}")
+        self.r_var.set(f"R: {r:.4f}")
+        self.l_var.set(f"L: {l:.4f}")
+        self.volume_var.set(f"Volume: {volume:.2f}")
 
         self.constraints_list.delete(0, tk.END)
         for name, value in constraints.items():
-            self.constraints_list.insert(tk.END, f"{name:20s} = {value:12.6f}")
+            mark = "OK" if value <= 0 else "VIOL"
+            self.constraints_list.insert(tk.END, f"{name:20s} = {value:11.6f}  {mark}")
 
     def update_ui(self, iteration: int, average_fitness: float, best, population_snapshot) -> None:
         self.append_result(f"{iteration:04d}: {decode(best)}")
@@ -487,6 +508,7 @@ class PressureVesselApp:
 
         self.update_chart()
         self.update_design_panel(best)
+        self.redraw_vessel(best)
 
         if population_snapshot is not None:
             self.draw_pool_graph_image(population_snapshot)
@@ -523,11 +545,204 @@ class PressureVesselApp:
         self.pool_canvas.delete("all")
         self.pool_canvas.create_image(0, 0, anchor="nw", image=self.pool_image)
 
+    def redraw_vessel(self, chromosome: Chromosome[float] | None) -> None:
+        self.vessel_canvas.delete("all")
+
+        if chromosome is None:
+            self.vessel_canvas.create_text(
+                285,
+                125,
+                text="Run the solver to visualize the vessel",
+                font=("Arial", 14),
+            )
+            return
+
+        design = get_design_dict(chromosome)
+        ts = design["Ts"]
+        th = design["Th"]
+        r = design["R"]
+        l = design["L"]
+
+        cw = max(1, int(self.vessel_canvas.winfo_width()))
+        ch = max(1, int(self.vessel_canvas.winfo_height()))
+
+        margin_x = 40
+        margin_y = 30
+
+        usable_w = cw - 2 * margin_x
+        usable_h = ch - 2 * margin_y
+
+        outer_half_height_units = r + th
+        outer_body_length_units = l + 2 * (r + th)
+
+        if outer_body_length_units <= 0 or outer_half_height_units <= 0:
+            return
+
+        scale_x = usable_w / outer_body_length_units
+        scale_y = usable_h / (2 * outer_half_height_units)
+        scale = min(scale_x, scale_y)
+
+        body_len = l * scale
+        inner_r = r * scale
+        shell_t = max(1.0, ts * scale)
+        head_t = max(1.0, th * scale)
+
+        outer_r = inner_r + head_t
+
+        center_y = ch / 2
+        body_x1 = margin_x + outer_r
+        body_x2 = body_x1 + body_len
+
+        outer_top = center_y - (inner_r + shell_t)
+        outer_bottom = center_y + (inner_r + shell_t)
+        inner_top = center_y - inner_r
+        inner_bottom = center_y + inner_r
+
+        # Outer shell
+        self.vessel_canvas.create_rectangle(
+            body_x1,
+            outer_top,
+            body_x2,
+            outer_bottom,
+            fill="#cfe2f3",
+            outline="#1f4e79",
+            width=2,
+        )
+
+        # Inner shell
+        self.vessel_canvas.create_rectangle(
+            body_x1 + shell_t,
+            inner_top,
+            body_x2 - shell_t,
+            inner_bottom,
+            fill="white",
+            outline="#7f7f7f",
+            width=1,
+        )
+
+        # Left outer head
+        self.vessel_canvas.create_oval(
+            body_x1 - 2 * outer_r,
+            center_y - (inner_r + head_t),
+            body_x1,
+            center_y + (inner_r + head_t),
+            fill="#cfe2f3",
+            outline="#1f4e79",
+            width=2,
+        )
+
+        # Right outer head
+        self.vessel_canvas.create_oval(
+            body_x2,
+            center_y - (inner_r + head_t),
+            body_x2 + 2 * outer_r,
+            center_y + (inner_r + head_t),
+            fill="#cfe2f3",
+            outline="#1f4e79",
+            width=2,
+        )
+
+        # Left inner head
+        self.vessel_canvas.create_oval(
+            body_x1 - 2 * inner_r + head_t,
+            center_y - inner_r,
+            body_x1 - head_t,
+            center_y + inner_r,
+            fill="white",
+            outline="#7f7f7f",
+            width=1,
+        )
+
+        # Right inner head
+        self.vessel_canvas.create_oval(
+            body_x2 + head_t,
+            center_y - inner_r,
+            body_x2 + 2 * inner_r - head_t,
+            center_y + inner_r,
+            fill="white",
+            outline="#7f7f7f",
+            width=1,
+        )
+
+        # Center line
+        self.vessel_canvas.create_line(
+            20, center_y, cw - 20, center_y, fill="#aaaaaa", dash=(4, 3)
+        )
+
+        # Dimension L
+        dim_y = outer_bottom + 18
+        self.vessel_canvas.create_line(body_x1, dim_y, body_x2, dim_y, arrow=tk.BOTH)
+        self.vessel_canvas.create_text(
+            (body_x1 + body_x2) / 2,
+            dim_y + 12,
+            text=f"L = {l:.2f}",
+            font=("Arial", 10, "bold"),
+        )
+
+        # Dimension R
+        dim_x = body_x2 + 55
+        self.vessel_canvas.create_line(dim_x, center_y, dim_x, inner_top, arrow=tk.BOTH)
+        self.vessel_canvas.create_text(
+            dim_x + 26,
+            (center_y + inner_top) / 2,
+            text=f"R = {r:.2f}",
+            angle=90,
+            font=("Arial", 10, "bold"),
+        )
+
+        # Shell thickness Ts
+        ts_x = body_x1 + 20
+        self.vessel_canvas.create_line(
+            ts_x,
+            inner_top,
+            ts_x,
+            outer_top,
+            arrow=tk.BOTH,
+            fill="darkgreen",
+        )
+        self.vessel_canvas.create_text(
+            ts_x + 28,
+            (inner_top + outer_top) / 2,
+            text=f"Ts={ts:.3f}",
+            angle=90,
+            fill="darkgreen",
+            font=("Arial", 9, "bold"),
+        )
+
+        # Head thickness Th
+        th_y = center_y - inner_r - head_t / 2
+        self.vessel_canvas.create_line(
+            body_x2 + 2 * inner_r - head_t,
+            th_y,
+            body_x2 + 2 * outer_r,
+            th_y,
+            arrow=tk.BOTH,
+            fill="purple",
+        )
+        self.vessel_canvas.create_text(
+            body_x2 + 2 * outer_r + 28,
+            th_y,
+            text=f"Th={th:.3f}",
+            fill="purple",
+            font=("Arial", 9, "bold"),
+        )
+
+        feasible_text = "FEASIBLE" if is_feasible(chromosome) else "INFEASIBLE"
+        feasible_color = "darkgreen" if is_feasible(chromosome) else "red"
+
+        self.vessel_canvas.create_text(
+            cw / 2,
+            18,
+            text=feasible_text,
+            fill=feasible_color,
+            font=("Arial", 14, "bold"),
+        )
+
     def run(self) -> None:
         self.root.mainloop()
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = PressureVesselApp(root)
+    app = PressureVesselVisualApp(root)
     app.run()

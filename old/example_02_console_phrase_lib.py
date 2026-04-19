@@ -2,12 +2,7 @@ from __future__ import annotations
 import random
 from typing import Final
 import numpy as np
-from core.ga_solver import (
-    Chromosome,
-    CrossoverType,
-    GeneticSolver,
-    MutationType,
-)
+from core.ga_solver1 import Chromosome, CrossoverType, GeneticSolver, MutationType
 
 LETTERS: Final[str] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 1234567890,._-"
 PHRASE: Final[str] = "Genetic-Algorithms-From-Theory-to-Real-Projects"
@@ -15,14 +10,8 @@ PHRASE: Final[str] = "Genetic-Algorithms-From-Theory-to-Real-Projects"
 LETTER_COUNT: Final[int] = len(LETTERS)
 PHRASE_LENGTH: Final[int] = len(PHRASE)
 
-# Character <-> index maps
-LETTER_TO_INDEX: dict[str, int] = {ch: i for i, ch in enumerate(LETTERS)}
-INDEX_TO_LETTER: dict[int, str] = {i: ch for i, ch in enumerate(LETTERS)}
-
-# NumPy arrays for fast lookup
 LETTER_CODES: np.ndarray = np.fromiter((ord(ch) for ch in LETTERS), dtype=np.int32)
 PHRASE_CODES: np.ndarray = np.fromiter((ord(ch) for ch in PHRASE), dtype=np.int32)
-
 
 def encode_text_to_indices(text: str) -> list[int]:
     """
@@ -38,7 +27,6 @@ def encode_text_to_indices(text: str) -> list[int]:
         indices.append(LETTER_TO_INDEX[ch])
     return indices
 
-
 def decode_indices(indices: list[int] | np.ndarray) -> str:
     """
     Convert LETTERS-domain indices back into text.
@@ -47,20 +35,17 @@ def decode_indices(indices: list[int] | np.ndarray) -> str:
     codes = LETTER_CODES[idx]
     return "".join(chr(x) for x in codes.tolist())
 
-
 def decode(chromosome: Chromosome[int]) -> str:
     """
     Decode a chromosome whose genes are LETTERS-domain integer indices.
     """
     return decode_indices(chromosome.data)
 
-
 def random_gene() -> int:
     """
     Generate a random gene in the valid LETTERS index domain.
     """
     return random.randrange(LETTER_COUNT)
-
 
 def phrase_generator() -> Chromosome[int]:
     """
@@ -76,7 +61,6 @@ def phrase_generator() -> Chromosome[int]:
     )
     return Chromosome(genes.tolist())
 
-
 def calculate_fitness(chromosome: Chromosome[int]) -> float:
     """
     Fitness function for phrase evolution.
@@ -88,20 +72,17 @@ def calculate_fitness(chromosome: Chromosome[int]) -> float:
     candidate_codes = LETTER_CODES[idx]
     return float(np.abs(PHRASE_CODES - candidate_codes).sum())
 
-
 def stop_condition(best: Chromosome[int]) -> bool:
     """
     Stop when exact phrase is found.
     """
     return best.fitness == 0.0
 
-
 def chromosome_to_numpy(chromosome: Chromosome[int]) -> np.ndarray:
     """
     Convert a chromosome to a NumPy int32 array.
     """
     return np.asarray(chromosome.data, dtype=np.int32)
-
 
 def population_to_index_matrix(
     population_snapshot: list[list[int]],
@@ -116,7 +97,6 @@ def population_to_index_matrix(
         return np.empty((0, 0), dtype=np.int32)
 
     return np.asarray(population_snapshot, dtype=np.int32)
-
 
 def generate_color_scheme(count: int) -> np.ndarray:
     """
@@ -135,7 +115,6 @@ def generate_color_scheme(count: int) -> np.ndarray:
         colors[i] = (int(r * 255), int(g * 255), int(b * 255))
 
     return colors
-
 
 def solve_phrase_console(
     population_size: int = 1024 * 8,
@@ -185,7 +164,6 @@ def solve_phrase_console(
 
     return solver.evolve()
 
-
 def run_console_demo() -> None:
     """
     A tiny demo entry point so this file can be run directly.
@@ -202,7 +180,6 @@ def run_console_demo() -> None:
 
     if result is None:
         print("\nExact solution not found within iteration limit.")
-
 
 if __name__ == "__main__":
     run_console_demo()

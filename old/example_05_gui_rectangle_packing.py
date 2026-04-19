@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from tkinter import messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from core.ga_solver import Chromosome, CrossoverType, GeneticSolver, MutationType
+from core.ga_solver1 import Chromosome, CrossoverType, GeneticSolver, MutationType
 
 # =========================================================
 # Problem-specific code

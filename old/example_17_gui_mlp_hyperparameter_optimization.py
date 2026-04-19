@@ -17,7 +17,7 @@ from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import StandardScaler
 
-from core.ga_solver import Chromosome, CrossoverType, GeneticSolver, MutationType, Population
+from core.ga_solver1 import Chromosome, CrossoverType, GeneticSolver, MutationType, Population
 
 
 # =========================================================
