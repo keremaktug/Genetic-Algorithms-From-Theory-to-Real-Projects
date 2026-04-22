@@ -1,0 +1,54 @@
+-------------------------------------------------------------------------------------
+GENETIC ALGORITHMS FROM THEORY TO REAL PROJECTS
+-------------------------------------------------------------------------------------
+1.Definition and History
+2.Usage Fields
+3.Biological Background
+4.Key Concepts-I    (Genes)
+5.Key Concepts-II   (Chromosomes)
+6.Key Concepts-III  (Population)
+7.Key Concepts-IV   (Crossover)
+8.Key Concepts-V    (Selection)
+9.Key Concepts-VI   (Elitism)
+10.Programming Example : Evaluating a Phrase
+11.Programming Example : Creating a common library
+12.Programming Example : Adding GUI
+13.Programming Example : 8-Queens Problem
+14.Programming Example : Knapsack Problem
+15.Programming Example : Time Tabling
+16.Programming Example : Analog RC
+17.Programming Example : Analog OpAmp
+18.Programming Example : Machine Learning Hyperparameter Optimization
+19.Programming Example : Machine Learning Hyperparameter Optimization (MLP)
+20.Programming Example : Machine Learning Hyperparameter Optimization (Random Forest)
+
+Acknowledgments
+Foundations
+1.1 Definition and History
+1.2 Usage Fields
+1.3 Biological Background
+Core Concepts
+2.1 Genes
+2.2 Chromosomes
+2.3 Population
+2.4 Selection
+2.5 Crossover
+2.6 Mutation
+2.7 Elitism
+How GA Works
+3.1 Genetic Algorithm Workflow
+3.2 Parameter Tuning (mutation rate, population size, etc.)
+Basic Projects
+4.1 Evaluating a Phrase
+4.2 Common Library
+4.3 GUI
+Classic Problems
+5.1 8-Queens
+5.2 Knapsack
+5.3 Timetabling
+Advanced / Real World
+6.1 Analog RC
+6.2 Analog OpAmp
+6.3 ML Hyperparameter Optimization
+6.4 MLP Optimization
+6.5 Random Forest Optimization
