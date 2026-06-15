@@ -1,0 +1,27 @@
+<Solution>
+  <Project Path="01.Phrase.FromScratch.Console/01.Phrase.FromScratch.Console.csproj" />
+  <Project Path="02.Phrase.FromScratch.Wpf/02.Phrase.FromScratch.Wpf.csproj" />
+  <Project Path="03.GA.Core/03.GA.Core.csproj" />
+  <Project Path="04.Phrase.WithCore.Wpf/04.Phrase.WithCore.Wpf.csproj" />
+  <Project Path="06.EightQueens.Wpf/05.EightQueens.Wpf.csproj" />
+  <Project Path="07.Knapsack.Wpf/06.Knapsack.Wpf.csproj" />
+  <Project Path="08.TSP.Wpf/07.TSP.Wpf.csproj" />
+  <Project Path="09.Sudoku.Wpf/08.Sudoku.Wpf.csproj" />
+  <Project Path="10.Timetabling.Wpf/09.Timetabling.Wpf.csproj" />
+  <Project Path="11.Rectangles.Wpf/10.Rectangles.Wpf.csproj" />
+  <Project Path="12.AnalogRC.Wpf/14.AnalogRC.Wpf.csproj" />
+  <Project Path="13.AnalogOpAmp.Wpf/15.AnalogOpAmp.Wpf.csproj" />
+  <Project Path="14.MLHyperparameters.Console/20.MLHyperparameters.Console.csproj" />
+  <Project Path="15.RandomForestHyperparameters.Console/21.RandomForestHyperparameters.Console.csproj" />
+  <Project Path="16.GraphColoring.Wpf/11.GraphColoring.Wpf.csproj" />
+  <Project Path="17.VehicleRouting.Wpf/12.VehicleRouting.Wpf.csproj" />
+  <Project Path="18.FeatureSelection.Console/22.FeatureSelection.Console.csproj" />
+  <Project Path="19.ImageApproximation.Wpf/18.ImageApproximation.Wpf.csproj" />
+  <Project Path="20.MazeSolver.Wpf/13.MazeSolver.Wpf.csproj" />
+  <Project Path="21.Rastrigin.Wpf/16.Rastrigin.Wpf.csproj" />
+  <Project Path="22.GearTrain.Wpf/17.GearTrain.Wpf.csproj" />
+  <Project Path="23.RubiksCube.Wpf/19.RubiksCube.Wpf.csproj" />
+  <Project Path="24.LunarLanderPolicy.Wpf/24.LunarLanderPolicy.Wpf.csproj" />
+  <Project Path="25.NeuralArchitectureSearch.Wpf/25.NeuralArchitectureSearch.Wpf.csproj" />
+  <Project Path="26.SnakeNeuroevolution.Wpf/26.SnakeNeuroevolution.Wpf.csproj" />
+</Solution>
