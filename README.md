@@ -152,6 +152,10 @@ Buy the book on Leanpub:
 
 https://leanpub.com/geneticalgorithmsfromtheorytorealprojects
 
+Buy the book on Gumroad
+
+https://keremaktug.gumroad.com/l/iygzyk
+
 ## License
 
 This repository is provided as companion source code for the book. See the repository license or book terms before using the code in commercial projects.
