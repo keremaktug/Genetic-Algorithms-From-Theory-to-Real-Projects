@@ -9,7 +9,7 @@ The book teaches Genetic Algorithms by building real projects, not by stopping a
 ## Get The Book
 
 - Leanpub: https://leanpub.com/geneticalgorithmsfromtheorytorealprojects
-- Gumroad: add your Gumroad link here
+- Gumroad: https://keremaktug.gumroad.com/l/iygzyk
 - Amazon Kindle: coming soon
 
 ## What You Will Build
@@ -155,4 +155,3 @@ https://leanpub.com/geneticalgorithmsfromtheorytorealprojects
 ## License
 
 This repository is provided as companion source code for the book. See the repository license or book terms before using the code in commercial projects.
-
