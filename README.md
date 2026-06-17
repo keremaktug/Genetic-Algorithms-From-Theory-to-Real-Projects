@@ -3,13 +3,13 @@
 Learn Genetic Algorithms by building real optimization projects in C#.
 
 ✔ Build a reusable GA library<br />
-✔ Solve Sudoku
-✔ Solve Knapsack
-✔ Vehicle Routing Optimization
-✔ Maze Solver
-✔ Snake AI with Neuroevolution
-✔ ML.NET Hyperparameter Optimization
-✔ Lunar Lander Agent
+✔ Solve Sudoku<br />
+✔ Solve Knapsack<br />
+✔ Vehicle Routing Optimization<br />
+✔ Maze Solver<br />
+✔ Snake AI with Neuroevolution<br />
+✔ ML.NET Hyperparameter Optimization<br />
+✔ Lunar Lander Agent<br />
 
 204-page practical book with complete source code.
 
