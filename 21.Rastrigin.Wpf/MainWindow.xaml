@@ -85,12 +85,14 @@
                     </Grid.RowDefinitions>
                     <DockPanel Margin="0,0,0,10">
                         <TextBlock Text="Search space" FontSize="18" FontWeight="SemiBold" />
-                        <TextBlock Text="blue/green = low value, orange/red = high value"
+                        <TextBlock Text="blue = low value, yellow/orange = high value"
                                    DockPanel.Dock="Right"
                                    Foreground="#59616D"
                                    VerticalAlignment="Center" />
                     </DockPanel>
-                    <Canvas x:Name="SurfaceCanvas" Grid.Row="1" Background="#FBFCFD" SizeChanged="SurfaceCanvas_SizeChanged" />
+                    <Border Grid.Row="1" Background="#F3F6FA" ClipToBounds="True">
+                        <Viewport3D x:Name="SurfaceViewport" SizeChanged="SurfaceViewport_SizeChanged" />
+                    </Border>
                 </Grid>
             </Border>
 

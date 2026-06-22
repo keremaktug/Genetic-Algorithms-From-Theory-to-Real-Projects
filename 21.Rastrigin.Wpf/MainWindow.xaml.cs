@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using System.Windows.Shapes;
 using GACore;
 
@@ -15,6 +16,8 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _evolutionCancellation;
     private IReadOnlyList<Chromosome<double>> _population = [];
     private double[] _bestGenes = [];
+
+    private const double SurfaceHeightScale = 1.35;
 
     public MainWindow()
     {
@@ -92,7 +95,7 @@ public partial class MainWindow : Window
         UpdateParameterLabels();
     }
 
-    private void SurfaceCanvas_SizeChanged(object sender, SizeChangedEventArgs e) => DrawSurface();
+    private void SurfaceViewport_SizeChanged(object sender, SizeChangedEventArgs e) => DrawSurface();
 
     private void FitnessCanvas_SizeChanged(object sender, SizeChangedEventArgs e) => DrawFitnessChart();
 
@@ -157,172 +160,193 @@ public partial class MainWindow : Window
 
     private void DrawSurface()
     {
-        SurfaceCanvas.Children.Clear();
+        SurfaceViewport.Children.Clear();
 
-        if (SurfaceCanvas.ActualWidth <= 0 || SurfaceCanvas.ActualHeight <= 0)
+        if (SurfaceViewport.ActualWidth <= 0 || SurfaceViewport.ActualHeight <= 0)
         {
             return;
         }
 
-        var size = Math.Min(SurfaceCanvas.ActualWidth - 96, SurfaceCanvas.ActualHeight - 58);
-        size = Math.Max(120, size);
-        var left = (SurfaceCanvas.ActualWidth - size) / 2;
-        var top = (SurfaceCanvas.ActualHeight - size) / 2 - 4;
-        const int cells = 80;
-        var cell = size / cells;
+        SurfaceViewport.Camera = new PerspectiveCamera
+        {
+            Position = new Point3D(7.8, 9.6, 10.8),
+            LookDirection = new Vector3D(-7.8, -8.6, -10.8),
+            UpDirection = new Vector3D(0, 1, 0),
+            FieldOfView = 48
+        };
+
+        var scene = new Model3DGroup();
+        scene.Children.Add(new AmbientLight(Color.FromRgb(175, 184, 196)));
+        scene.Children.Add(new DirectionalLight(Colors.White, new Vector3D(-0.45, -0.9, -0.55)));
+        scene.Children.Add(CreateSurfaceModel());
+        scene.Children.Add(CreateBaseGridModel());
+
+        foreach (var chromosome in _population.Take(250))
+        {
+            scene.Children.Add(CreateMarker(chromosome.Genes[0], chromosome.Genes[1], 0.052, Color.FromArgb(210, 30, 41, 59)));
+        }
+
+        if (_bestGenes.Length == 2)
+        {
+            scene.Children.Add(CreateMarker(0, 0, 0.105, Colors.Gold));
+            scene.Children.Add(CreateMarker(_bestGenes[0], _bestGenes[1], 0.14, Color.FromRgb(220, 38, 38)));
+        }
+
+        SurfaceViewport.Children.Add(new ModelVisual3D { Content = scene });
+    }
+
+    private static Model3DGroup CreateSurfaceModel()
+    {
+        const int cells = 62;
+        var group = new Model3DGroup();
 
         for (int row = 0; row < cells; row++)
         {
             for (int col = 0; col < cells; col++)
             {
-                var x = RastriginProblem.Min + col / (double)(cells - 1) * (RastriginProblem.Max - RastriginProblem.Min);
-                var y = RastriginProblem.Max - row / (double)(cells - 1) * (RastriginProblem.Max - RastriginProblem.Min);
-                var value = Math.Min(80, RastriginProblem.Evaluate(x, y));
-                var color = HeatColor(value / 80.0);
+                var x0 = RastriginProblem.Min + col / (double)cells * (RastriginProblem.Max - RastriginProblem.Min);
+                var x1 = RastriginProblem.Min + (col + 1) / (double)cells * (RastriginProblem.Max - RastriginProblem.Min);
+                var y0 = RastriginProblem.Min + row / (double)cells * (RastriginProblem.Max - RastriginProblem.Min);
+                var y1 = RastriginProblem.Min + (row + 1) / (double)cells * (RastriginProblem.Max - RastriginProblem.Min);
+                var centerValue = Math.Min(80, RastriginProblem.Evaluate((x0 + x1) / 2, (y0 + y1) / 2));
 
-                var rect = new Rectangle
-                {
-                    Width = cell + 0.5,
-                    Height = cell + 0.5,
-                    Fill = new SolidColorBrush(color),
-                    StrokeThickness = 0
-                };
-                Canvas.SetLeft(rect, left + col * cell);
-                Canvas.SetTop(rect, top + row * cell);
-                SurfaceCanvas.Children.Add(rect);
+                group.Children.Add(CreateSurfaceCell(x0, y0, x1, y1, HeatColor(centerValue / 80.0)));
             }
         }
 
-        DrawAxisLine(left + size / 2, top, left + size / 2, top + size);
-        DrawAxisLine(left, top + size / 2, left + size, top + size / 2);
-        DrawFrame(left, top, size);
-        DrawAxisLabels(left, top, size);
-        DrawLegend(left + size + 18, top + 8);
+        return group;
+    }
 
-        foreach (var chromosome in _population.Take(250))
+    private static GeometryModel3D CreateSurfaceCell(double x0, double y0, double x1, double y1, Color color)
+    {
+        var mesh = new MeshGeometry3D();
+        mesh.Positions.Add(ToSurfacePoint(x0, y0));
+        mesh.Positions.Add(ToSurfacePoint(x1, y0));
+        mesh.Positions.Add(ToSurfacePoint(x1, y1));
+        mesh.Positions.Add(ToSurfacePoint(x0, y1));
+        mesh.TriangleIndices.Add(0);
+        mesh.TriangleIndices.Add(1);
+        mesh.TriangleIndices.Add(2);
+        mesh.TriangleIndices.Add(0);
+        mesh.TriangleIndices.Add(2);
+        mesh.TriangleIndices.Add(3);
+
+        var material = new DiffuseMaterial(new SolidColorBrush(color));
+        return new GeometryModel3D(mesh, material) { BackMaterial = material };
+    }
+
+    private static Model3DGroup CreateBaseGridModel()
+    {
+        var group = new Model3DGroup();
+        var axisMaterial = new DiffuseMaterial(new SolidColorBrush(Color.FromArgb(135, 71, 85, 105)));
+
+        for (var i = -5; i <= 5; i++)
         {
-            DrawPoint(chromosome.Genes[0], chromosome.Genes[1], Brushes.White, new SolidColorBrush(Color.FromRgb(15, 23, 42)), 5, left, top, size, 0.72);
+            group.Children.Add(CreateLineTube(new Point3D(-5.12, -0.05, i), new Point3D(5.12, -0.05, i), 0.01, axisMaterial));
+            group.Children.Add(CreateLineTube(new Point3D(i, -0.05, -5.12), new Point3D(i, -0.05, 5.12), 0.01, axisMaterial));
         }
 
-        if (_bestGenes.Length == 2)
-        {
-            DrawPoint(0, 0, Brushes.Gold, Brushes.Black, 12, left, top, size, 1.0);
-            AddCanvasText("global min", ProjectX(0, left, size) + 9, ProjectY(0, top, size) - 24, Brushes.Black, 12, FontWeights.SemiBold);
+        return group;
+    }
 
-            DrawPoint(_bestGenes[0], _bestGenes[1], Brushes.Black, Brushes.White, 14, left, top, size, 1.0);
-            AddCanvasText("best", ProjectX(_bestGenes[0], left, size) + 10, ProjectY(_bestGenes[1], top, size) + 4, Brushes.Black, 12, FontWeights.SemiBold);
+    private static GeometryModel3D CreateLineTube(Point3D a, Point3D b, double radius, Material material)
+    {
+        var vector = b - a;
+        var length = vector.Length;
+        var center = a + vector * 0.5;
+        var mesh = new MeshGeometry3D();
+        const int sides = 8;
+        var up = Math.Abs(Vector3D.DotProduct(vector, new Vector3D(0, 1, 0))) > 0.9 * length
+            ? new Vector3D(1, 0, 0)
+            : new Vector3D(0, 1, 0);
+        var right = Vector3D.CrossProduct(vector, up);
+        right.Normalize();
+        up = Vector3D.CrossProduct(right, vector);
+        up.Normalize();
+        vector.Normalize();
+
+        for (var i = 0; i < sides; i++)
+        {
+            var angle = i * 2 * Math.PI / sides;
+            var offset = right * (Math.Cos(angle) * radius) + up * (Math.Sin(angle) * radius);
+            mesh.Positions.Add(center - vector * (length / 2) + offset);
+            mesh.Positions.Add(center + vector * (length / 2) + offset);
         }
-    }
 
-    private void DrawFrame(double left, double top, double size)
-    {
-        var frame = new Rectangle
+        for (var i = 0; i < sides; i++)
         {
-            Width = size,
-            Height = size,
-            Fill = Brushes.Transparent,
-            Stroke = new SolidColorBrush(Color.FromRgb(32, 36, 42)),
-            StrokeThickness = 1.4
-        };
-        Canvas.SetLeft(frame, left);
-        Canvas.SetTop(frame, top);
-        SurfaceCanvas.Children.Add(frame);
+            var next = (i + 1) % sides;
+            mesh.TriangleIndices.Add(i * 2);
+            mesh.TriangleIndices.Add(next * 2);
+            mesh.TriangleIndices.Add(next * 2 + 1);
+            mesh.TriangleIndices.Add(i * 2);
+            mesh.TriangleIndices.Add(next * 2 + 1);
+            mesh.TriangleIndices.Add(i * 2 + 1);
+        }
+
+        return new GeometryModel3D(mesh, material) { BackMaterial = material };
     }
 
-    private void DrawAxisLabels(double left, double top, double size)
+    private static GeometryModel3D CreateMarker(double x, double y, double radius, Color color)
     {
-        AddCanvasText("x = -5.12", left - 26, top + size + 8, Brushes.Black, 12, FontWeights.Normal);
-        AddCanvasText("x = 0", left + size / 2 - 12, top + size + 8, Brushes.Black, 12, FontWeights.Normal);
-        AddCanvasText("x = 5.12", left + size - 34, top + size + 8, Brushes.Black, 12, FontWeights.Normal);
-        AddCanvasText("y = 5.12", left - 58, top - 4, Brushes.Black, 12, FontWeights.Normal);
-        AddCanvasText("y = 0", left - 38, top + size / 2 - 8, Brushes.Black, 12, FontWeights.Normal);
-        AddCanvasText("y = -5.12", left - 62, top + size - 12, Brushes.Black, 12, FontWeights.Normal);
+        var center = ToSurfacePoint(x, y);
+        center.Y += 0.08;
+        var mesh = CreateSphereMesh(center, radius, 12, 8);
+        var material = new DiffuseMaterial(new SolidColorBrush(color));
+        return new GeometryModel3D(mesh, material) { BackMaterial = material };
     }
 
-    private void DrawLegend(double left, double top)
+    private static MeshGeometry3D CreateSphereMesh(Point3D center, double radius, int longitudeSegments, int latitudeSegments)
     {
-        AddCanvasText("Value", left, top - 22, Brushes.Black, 13, FontWeights.SemiBold);
+        var mesh = new MeshGeometry3D();
 
-        for (int i = 0; i < 80; i++)
+        for (var lat = 0; lat <= latitudeSegments; lat++)
         {
-            var rect = new Rectangle
+            var theta = lat * Math.PI / latitudeSegments;
+            var sinTheta = Math.Sin(theta);
+            var cosTheta = Math.Cos(theta);
+
+            for (var lon = 0; lon <= longitudeSegments; lon++)
             {
-                Width = 16,
-                Height = 2.5,
-                Fill = new SolidColorBrush(HeatColor(i / 79.0)),
-                StrokeThickness = 0
-            };
-            Canvas.SetLeft(rect, left);
-            Canvas.SetTop(rect, top + i * 2.5);
-            SurfaceCanvas.Children.Add(rect);
+                var phi = lon * 2 * Math.PI / longitudeSegments;
+                mesh.Positions.Add(new Point3D(
+                    center.X + radius * sinTheta * Math.Cos(phi),
+                    center.Y + radius * cosTheta,
+                    center.Z + radius * sinTheta * Math.Sin(phi)));
+            }
         }
 
-        AddCanvasText("low", left + 22, top - 2, Brushes.Black, 12, FontWeights.Normal);
-        AddCanvasText("high", left + 22, top + 188, Brushes.Black, 12, FontWeights.Normal);
-    }
-
-    private void DrawAxisLine(double x1, double y1, double x2, double y2)
-    {
-        SurfaceCanvas.Children.Add(new Line
+        for (var lat = 0; lat < latitudeSegments; lat++)
         {
-            X1 = x1,
-            Y1 = y1,
-            X2 = x2,
-            Y2 = y2,
-            Stroke = new SolidColorBrush(Color.FromArgb(80, 255, 255, 255)),
-            StrokeThickness = 1
-        });
+            for (var lon = 0; lon < longitudeSegments; lon++)
+            {
+                var first = lat * (longitudeSegments + 1) + lon;
+                var second = first + longitudeSegments + 1;
+                mesh.TriangleIndices.Add(first);
+                mesh.TriangleIndices.Add(second);
+                mesh.TriangleIndices.Add(first + 1);
+                mesh.TriangleIndices.Add(second);
+                mesh.TriangleIndices.Add(second + 1);
+                mesh.TriangleIndices.Add(first + 1);
+            }
+        }
+
+        return mesh;
     }
 
-    private void DrawPoint(double x, double y, Brush fill, Brush stroke, double size, double left, double top, double surfaceSize, double opacity)
+    private static Point3D ToSurfacePoint(double x, double y)
     {
-        var px = ProjectX(x, left, surfaceSize);
-        var py = ProjectY(y, top, surfaceSize);
-        var ellipse = new Ellipse
-        {
-            Width = size,
-            Height = size,
-            Fill = fill,
-            Stroke = stroke,
-            StrokeThickness = 1.6,
-            Opacity = opacity
-        };
-        Canvas.SetLeft(ellipse, px - size / 2);
-        Canvas.SetTop(ellipse, py - size / 2);
-        SurfaceCanvas.Children.Add(ellipse);
-    }
-
-    private static double ProjectX(double x, double left, double surfaceSize)
-    {
-        return left + (x - RastriginProblem.Min) / (RastriginProblem.Max - RastriginProblem.Min) * surfaceSize;
-    }
-
-    private static double ProjectY(double y, double top, double surfaceSize)
-    {
-        return top + (RastriginProblem.Max - y) / (RastriginProblem.Max - RastriginProblem.Min) * surfaceSize;
-    }
-
-    private void AddCanvasText(string text, double left, double top, Brush foreground, double fontSize, FontWeight weight)
-    {
-        var label = new TextBlock
-        {
-            Text = text,
-            Foreground = foreground,
-            FontSize = fontSize,
-            FontWeight = weight
-        };
-        Canvas.SetLeft(label, left);
-        Canvas.SetTop(label, top);
-        SurfaceCanvas.Children.Add(label);
+        var value = Math.Min(80, RastriginProblem.Evaluate(x, y));
+        return new Point3D(x, value / 80.0 * SurfaceHeightScale, y);
     }
 
     private static Color HeatColor(double t)
     {
         t = Math.Clamp(t, 0, 1);
-        var start = Color.FromRgb(29, 78, 216);
-        var midLow = Color.FromRgb(34, 197, 94);
-        var midHigh = Color.FromRgb(245, 158, 11);
-        var end = Color.FromRgb(185, 28, 28);
+        var start = Color.FromRgb(37, 99, 235);
+        var midLow = Color.FromRgb(56, 189, 248);
+        var midHigh = Color.FromRgb(250, 204, 21);
+        var end = Color.FromRgb(249, 115, 22);
 
         if (t < 0.34)
         {

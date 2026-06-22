@@ -12,6 +12,14 @@ The book teaches Genetic Algorithms by building real projects, not by stopping a
 - Gumroad: https://keremaktug.gumroad.com/l/iygzyk
 - Amazon Kindle: coming soon
 
+## Watch the Demo Videos
+
+You can watch short demo videos for the visual projects on YouTube:
+
+- YouTube playlist: https://www.youtube.com/@keremaktug9822/playlists
+
+The videos show how the population evolves over time in examples such as TSP, Sudoku, Knapsack, Rectangle Packing, Vehicle Routing, Image Approximation, and Rubik's Cube.
+
 ## What You Will Learn
 
 - How genes, chromosomes, populations, selection, crossover, mutation, elitism, and fitness functions work

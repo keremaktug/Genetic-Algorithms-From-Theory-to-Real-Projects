@@ -43,33 +43,33 @@
                 <TextBlock Text="Solver parameters" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,14" />
 
                 <TextBlock Text="Move count" FontWeight="SemiBold" />
-                <TextBox x:Name="MoveCountTextBox" Text="80" Margin="0,6,0,14" />
+                <TextBox x:Name="MoveCountTextBox" Text="240" Margin="0,6,0,14" />
 
                 <TextBlock Text="Population size" FontWeight="SemiBold" />
-                <TextBox x:Name="PopulationSizeTextBox" Text="700" Margin="0,6,0,14" />
+                <TextBox x:Name="PopulationSizeTextBox" Text="5000" Margin="0,6,0,14" />
 
                 <TextBlock Text="Maximum generations" FontWeight="SemiBold" />
-                <TextBox x:Name="MaxGenerationsTextBox" Text="1000" Margin="0,6,0,14" />
+                <TextBox x:Name="MaxGenerationsTextBox" Text="10000" Margin="0,6,0,14" />
 
                 <TextBlock Text="Tournament size" FontWeight="SemiBold" />
-                <TextBox x:Name="TournamentSizeTextBox" Text="5" Margin="0,6,0,14" />
+                <TextBox x:Name="TournamentSizeTextBox" Text="8" Margin="0,6,0,14" />
 
                 <TextBlock Text="Elitism rate" FontWeight="SemiBold" />
                 <DockPanel Margin="0,6,0,14">
                     <TextBlock x:Name="ElitismRateTextBlock" DockPanel.Dock="Right" Width="48" TextAlignment="Right" />
-                    <Slider x:Name="ElitismRateSlider" Minimum="0.01" Maximum="0.40" Value="0.18" TickFrequency="0.01" ValueChanged="ParameterSlider_ValueChanged" />
+                    <Slider x:Name="ElitismRateSlider" Minimum="0.01" Maximum="0.40" Value="0.06" TickFrequency="0.01" ValueChanged="ParameterSlider_ValueChanged" />
                 </DockPanel>
 
                 <TextBlock Text="Mutation rate" FontWeight="SemiBold" />
                 <DockPanel Margin="0,6,0,14">
                     <TextBlock x:Name="MutationRateTextBlock" DockPanel.Dock="Right" Width="48" TextAlignment="Right" />
-                    <Slider x:Name="MutationRateSlider" Minimum="0" Maximum="0.60" Value="0.16" TickFrequency="0.01" ValueChanged="ParameterSlider_ValueChanged" />
+                    <Slider x:Name="MutationRateSlider" Minimum="0" Maximum="0.60" Value="0.04" TickFrequency="0.01" ValueChanged="ParameterSlider_ValueChanged" />
                 </DockPanel>
 
                 <TextBlock Text="Generation delay" FontWeight="SemiBold" />
                 <DockPanel Margin="0,6,0,0">
                     <TextBlock x:Name="DelayTextBlock" DockPanel.Dock="Right" Width="62" TextAlignment="Right" />
-                    <Slider x:Name="DelaySlider" Minimum="0" Maximum="100" Value="4" TickFrequency="1" ValueChanged="ParameterSlider_ValueChanged" />
+                    <Slider x:Name="DelaySlider" Minimum="0" Maximum="100" Value="0" TickFrequency="1" ValueChanged="ParameterSlider_ValueChanged" />
                 </DockPanel>
             </StackPanel>
         </Border>

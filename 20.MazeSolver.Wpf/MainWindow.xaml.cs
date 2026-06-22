@@ -22,7 +22,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         UpdateParameterLabels();
-        _problem = new MazeProblem(80);
+        _problem = new MazeProblem(240);
         DrawMaze();
     }
 
@@ -37,11 +37,23 @@ public partial class MainWindow : Window
 
         try
         {
-            foreach (var result in _solver!.Run())
+            using var enumerator = _solver!.Run().GetEnumerator();
+
+            while (!_evolutionCancellation.IsCancellationRequested)
             {
+                StatusTextBlock.Text = GenerationTextBlock.Text == "0" ? "Preparing population" : "Running";
+
+                var hasNext = await Task.Run(enumerator.MoveNext, _evolutionCancellation.Token);
+
+                if (!hasNext)
+                {
+                    break;
+                }
+
+                var result = enumerator.Current;
                 RenderResult(result);
 
-                if (result.IsSolutionFound)
+                if (_lastEvaluation?.ReachedExit == true)
                 {
                     StatusTextBlock.Text = "Exit reached";
                     break;
@@ -133,7 +145,7 @@ public partial class MainWindow : Window
             _problem,
             new TournamentSelection<int>(),
             new UniformCrossover<int>(),
-            new RandomResetMutation<int>(random => random.Next(4)),
+            new MazeMoveMutation(),
             options,
             new Random(42));
 
