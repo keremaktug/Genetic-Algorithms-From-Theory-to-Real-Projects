@@ -24,4 +24,5 @@
   <Project Path="24.LunarLanderPolicy.Wpf/24.LunarLanderPolicy.Wpf.csproj" />
   <Project Path="25.NeuralArchitectureSearch.Wpf/25.NeuralArchitectureSearch.Wpf.csproj" />
   <Project Path="26.SnakeNeuroevolution.Wpf/26.SnakeNeuroevolution.Wpf.csproj" />
+  <Project Path="27.EvolvedAntenna.Wpf/27.EvolvedAntenna.Wpf.csproj" />
 </Solution>
